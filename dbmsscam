@@ -1,0 +1,354 @@
+### Create Tables
+First, we need to create the three tables: `Programmer`, `Studies`, and `Software`.
+We will define primary keys and foreign keys as needed.
+```sql
+CREATE TABLE Programmer (
+programmer_id INT PRIMARY KEY AUTO_INCREMENT,
+programmer_name VARCHAR(50) NOT NULL,
+date_of_birth DATE NOT NULL,
+date_of_joining DATE NOT NULL,
+gender CHAR(1) NOT NULL CHECK (gender IN ('M', 'F')),
+profession1 VARCHAR(50) NOT NULL,
+profession2 VARCHAR(50),
+salary DECIMAL(10, 2) NOT NULL
+);
+CREATE TABLE Studies (
+study_id INT PRIMARY KEY AUTO_INCREMENT,
+programmer_id INT,
+study_place VARCHAR(50) NOT NULL,
+course_name VARCHAR(50) NOT NULL,
+course_cost DECIMAL(10, 2) NOT NULL,
+FOREIGN KEY (programmer_id) REFERENCES Programmer(programmer_id)
+);
+CREATE TABLE Software (
+software_id INT PRIMARY KEY AUTO_INCREMENT,
+programmer_id INT,
+title_of_software VARCHAR(100) NOT NULL,
+platform_used VARCHAR(50) NOT NULL,
+selling_cost DECIMAL(10, 2) NOT NULL,
+development_cost DECIMAL(10, 2) NOT NULL,
+no_of_products_sold INT NOT NULL,
+FOREIGN KEY (programmer_id) REFERENCES Programmer(programmer_id)
+);
+```
+### Insert Sample Data
+Next, we'll insert at least five records into each table.
+```sql
+INSERT INTO Programmer (programmer_name, date_of_birth, date_of_joining,
+gender, profession1, profession2, salary)
+VALUES
+('Alice', '1990-05-15', '2015-03-01', 'F', 'Python', 'Java', 3500),
+('Bob', '1985-08-20', '2010-07-15', 'M', 'C++', 'Oracle', 4500),
+('Charlie', '1992-11-25', '2016-02-20', 'M', 'C#', 'Python', 3200),
+('Diana', '1988-04-10', '2014-09-05', 'F', 'Java', 'C++', 3700),
+('Eve', '1993-01-30', '2018-06-10', 'F', 'Ruby', 'Python', 4000);
+INSERT INTO Studies (programmer_id, study_place, course_name, course_cost)
+VALUES
+(1, 'MIT', 'Computer Science', 5000),
+(2, 'Stanford', 'Computer Engineering', 5500),
+(3, 'Harvard', 'Data Science', 6000),
+(4, 'Berkeley', 'Software Engineering', 5800),
+(5, 'CMU', 'Artificial Intelligence', 6200);
+INSERT INTO Software (programmer_id, title_of_software, platform_used,
+selling_cost, development_cost, no_of_products_sold)
+VALUES
+(1, 'App1', 'Python', 2000, 1500, 500),
+(2, 'App2', 'C++', 3000, 2000, 800),
+(3, 'App3', 'C#', 2500, 1800, 600),
+(4, 'App4', 'Java', 2800, 2100, 700),
+(5, 'App5', 'Ruby', 2200, 1600, 650);
+```
+### Queries
+Below are the SQL queries for each requirement.
+1. **Display the names and ages of programmers:**
+```sql
+SELECT programmer_name, YEAR(CURDATE()) - YEAR(date_of_birth) AS age FROM
+Programmer;
+```
+2. **Which female programmer earning more than 3000 doesn’t know C++,
+Oracle or dbase:**
+```sql
+SELECT programmer_name FROM Programmer
+WHERE gender = 'F' AND salary > 3000 AND profession1 NOT IN ('C++', 'Oracle',
+'dbase') AND profession2 NOT IN ('C++', 'Oracle', 'dbase');
+```
+3. **Which institute has the most number of students:**
+```sql
+SELECT study_place, COUNT(*) AS student_count
+FROM Studies
+GROUP BY study_place
+ORDER BY student_count DESC
+LIMIT 1;
+```
+4. **Display language wise count of prof1:**
+```sql
+SELECT profession1, COUNT(*) AS count
+FROM Programmer
+GROUP BY profession1;
+```
+5. **Display the number of people born in each year:**
+```sql
+SELECT YEAR(date_of_birth) AS birth_year, COUNT(*) AS count
+FROM Programmer
+GROUP BY birth_year;
+```
+6. **Display details of programmers draw 2000-4000:**
+```sql
+SELECT * FROM Programmer
+WHERE salary BETWEEN 2000 AND 4000;
+``
+7. **Display the programmers name and their software’s:**
+```sql
+SELECT p.programmer_name, s.title_of_software
+FROM Programmer p
+JOIN Software s ON p.programmer_id = s.programmer_id;
+```
+8. **What is the highest number of copies sold by a package:**
+```sql
+SELECT MAX(no_of_products_sold) AS highest_sold
+FROM Software;
+```
+9. **Display each institute name with the number of students:**
+```sql
+SELECT study_place, COUNT(*) AS student_count
+FROM Studies
+GROUP BY study_place;
+```
+10. **Display the number of people born in each month:**
+```sql
+SELECT MONTH(date_of_birth) AS birth_month, COUNT(*) AS count
+FROM Programmer
+GROUP BY birth_month;
+```
+11. **What are the languages known by male programmers:**
+```sql
+SELECT DISTINCT profession1 AS language FROM Programmer
+WHERE gender = 'M'
+UNION
+SELECT DISTINCT profession2 AS language FROM Programmer
+WHERE gender = 'M';
+```
+12. **Display the lowest course fee:**
+```sql
+SELECT MIN(course_cost) AS lowest_cost
+FROM Studies;
+```
+13. **Which course has been done by most of the students:**
+```sql
+SELECT course_name, COUNT(*) AS student_count
+FROM Studies
+GROUP BY course_name
+ORDER BY student_count DESC
+LIMIT 1;
+```
+14. **Display each institute name with the number of courses, average cost per
+course:**
+```sql
+SELECT study_place, COUNT(course_name) AS number_of_courses,
+AVG(course_cost) AS average_cost
+FROM Studies
+GROUP BY study_place;
+```
+15. **Display the number of people studied in each institute:**
+```sql
+SELECT study_place, COUNT(DISTINCT programmer_id) AS number_of_students
+FROM Studies
+GROUP BY study_place;
+```
+16. **Display the details of software developed by Ramesh:**
+Assuming there is a programmer named Ramesh:
+```sql
+SELECT s.*
+FROM Software s
+JOIN Programmer p ON s.programmer_id = p.programmer_id
+WHERE p.programmer_name = 'Ramesh';
+```
+17. **How many people draw 2000-4000:**
+```sql
+SELECT COUNT(*) AS count
+FROM Programmer
+WHERE salary BETWEEN 2000 AND 4000;
+```
+18. **Which is the costliest software developed in .NET:**
+```sql
+SELECT title_of_software, selling_cost
+FROM Software
+WHERE platform_used = '.NET'
+ORDER BY selling_cost DESC
+LIMIT 1;
+```
+19. **Display the sales cost of the software’s developed by each programmer:**
+```sql
+SELECT p.programmer_name, SUM(s.selling_cost) AS total_sales_cost
+FROM Software s
+JOIN Programmer p ON s.programmer_id = p.programmer_id
+GROUP BY p.programmer_name;
+```
+20. **Which language has been stated as prof1 by most of the programmers:**
+```sql
+SELECT profession1, COUNT(*) AS count
+FROM Programmer
+GROUP BY profession1
+ORDER BY count DESC
+LIMIT 1;
+```
+21. **What is the price of the costliest software developed in BASIC:**
+```sql
+SELECT MAX(selling_cost) AS highest_cost
+FROM Software
+WHERE platform_used = 'BASIC';
+```
+22. **Display the details of programmers who don’t know Fortran, Cobol or
+.NET:**
+```sql
+SELECT *
+FROM Programmer
+WHERE profession1 NOT IN ('Fortran', 'Cobol', '.NET')
+AND profession2 NOT IN ('Fortran', 'Cobol', '.NET');
+```
+23. **Display the names of programmers whose names contain up to 5
+characters:**
+```sql
+SELECT programmer_name
+FROM Programmer
+WHERE LENGTH(programmer_name) <= 5;
+```
+24. **Display the number of software sold by each programmer:**
+```sql
+SELECT p.programmer_name, COUNT(s.software_id) AS software_count
+FROM Software s
+JOIN Programmer p ON s.programmer_id = p.programmer_id
+GROUP BY p.programmer_name;
+```
+25. **How old is the oldest male programmer:**
+```sql
+SELECT programmer_name, YEAR(CURDATE()) - YEAR(date_of_birth) AS age
+FROM Programmer
+WHERE gender = 'M'
+ORDER BY age DESC
+LIMIT 1;
+```
+26. **Identify and include the keys (Primary Keys & Foreign Keys) in the tables:**
+Already included in the table creation queries above.
+27. **Display the names of programmers who have done the DAP course:**
+```sql
+SELECT p.programmer_name
+FROM Programmer p
+JOIN Studies s ON p.programmer_id =
+s.programmer_id
+WHERE s.course_name = 'DAP';
+```
+28. **How many female programmers knowing Cobol have more than 2 years of
+experience:**
+```sql
+SELECT COUNT(*) AS count
+FROM Programmer
+WHERE gender = 'F' AND (profession1 = 'Cobol' OR profession2 = 'Cobol')
+AND DATEDIFF(CURDATE(), date_of_joining) / 365 > 2;
+```
+29. **Display the number of software in each language except C and C++:**
+```sql
+SELECT platform_used, COUNT(*) AS software_count
+FROM Software
+WHERE platform_used NOT IN ('C', 'C++')
+GROUP BY platform_used;
+```
+30. **How many programmers don’t know .NET and C:**
+```sql
+SELECT COUNT(*) AS count
+FROM Programmer
+WHERE profession1 NOT IN ('.NET', 'C')
+AND profession2 NOT IN ('.NET', 'C');
+```
+31. **Display the details of software whose sales have crossed 2000 mark:**
+```sql
+SELECT *
+FROM Software
+WHERE no_of_products_sold > 2000;
+```
+32. **Display the names of male and female programmers:**
+```sql
+SELECT programmer_name, gender
+FROM Programmer;
+```
+33. **Display the name of the highest-paid programmers for each language:**
+```sql
+SELECT profession1, programmer_name, MAX(salary) AS highest_salary
+FROM Programmer
+GROUP BY profession1
+ORDER BY highest_salary DESC;
+```
+34. **Display the selling cost of software developed in each language:**
+```sql
+SELECT platform_used, SUM(selling_cost) AS total_selling_cost
+FROM Software
+GROUP BY platform_used;
+```
+35. **Calculate the experience in years for each programmer and display along
+with their names in descending order:**
+```sql
+SELECT programmer_name, DATEDIFF(CURDATE(), date_of_joining) / 365 AS
+experience_years
+FROM Programmer
+ORDER BY experience_years DESC;
+```
+36. **Write a query to create a table:**
+Already provided in the table creation section.
+37. **Write a query to change the type of a column:**
+```sql
+ALTER TABLE Programmer MODIFY COLUMN salary FLOAT;
+```
+38. **Write a query to add a column to the existing table:**
+```sql
+ALTER TABLE Programmer ADD COLUMN email VARCHAR(100);
+```
+39. **Write a query to remove a column from the table:**
+```sql
+ALTER TABLE Programmer DROP COLUMN email;
+```
+40. **Write a query to modify the salary of a programmer from 10000 to
+20000:**
+```sql
+UPDATE Programmer SET salary = 20000 WHERE salary = 10000;
+```
+41. **Write a query to modify the date of birth of a programmer that was wrongly
+entered:**
+```sql
+UPDATE Programmer SET date_of_birth = '1990-01-01' WHERE
+programmer_name = 'Alice';
+```
+42. **Write a query to delete a table that is not needed anymore:**
+```sql
+DROP TABLE IF EXISTS OldTable;
+```
+43. **Write a query to remove a tuple from the table:**
+```sql
+DELETE FROM Programmer WHERE programmer_name = 'Eve';
+```
+44. **Write a query to create and delete views:**
+Create view:
+```sql
+CREATE VIEW ProgrammerDetails AS
+SELECT p.programmer_name, p.date_of_birth, p.salary, s.study_place
+FROM Programmer p
+JOIN Studies s ON p.programmer_id = s.programmer_id;
+```
+Delete view:
+```sql
+DROP VIEW IF EXISTS ProgrammerDetails;
+```
+45. **Write a query for controlling data/transactions:**
+```sql
+START TRANSACTION;
+UPDATE Programmer SET salary = salary + 500 WHERE gender = 'F';
+UPDATE Software SET selling_cost = selling_cost * 1.1;
+COMMIT;
+```
+46. **Write a query to remove a programmer whose name is “Ravi”:**
+```sql
+DELETE FROM Programmer WHERE programmer_name = 'Ravi';
+```
+47. **Write a query to remove all the tuples from the table:**
+```sql
+TRUNCATE TABLE Programmer;
+,,,
